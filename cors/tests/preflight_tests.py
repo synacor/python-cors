@@ -149,16 +149,8 @@ class Function_prepare_preflight_allowed_methods_Tests(unittest.TestCase):
 
         h, c = preflight.prepare_preflight_allowed_methods(request)
 
-        self.assertEqual(h, {"Access-Control-Allow-Methods": "PUT"})
+        self.assertEqual(h, {"Access-Control-Request-Method": "PUT"})
         self.assertEqual(c, [preflight.check_method])
-
-    def test_simple_method_unusual_content_type(self):
-        request = _request(method="POST", headers={"Content-Type": "application/json"})
-
-        h, c = preflight.prepare_preflight_allowed_methods(request)
-
-        self.assertEqual(h, {"Access-Control-Allow-Headers": "Content-Type"})
-        self.assertEqual(c, [preflight.check_headers])
 
 
 class Function_prepare_preflight_allowed_headers_Tests(unittest.TestCase):
@@ -177,7 +169,15 @@ class Function_prepare_preflight_allowed_headers_Tests(unittest.TestCase):
 
         h, c = preflight.prepare_preflight_allowed_headers(request)
 
-        self.assertEqual(h, {"Access-Control-Allow-Headers": "Foo-Bar"})
+        self.assertEqual(h, {"Access-Control-Request-Headers": "Foo-Bar"})
+        self.assertEqual(c, [preflight.check_headers])
+
+    def test_unusual_content_type(self):
+        request = _request(method="POST", headers={"Content-Type": "application/json"})
+
+        h, c = preflight.prepare_preflight_allowed_headers(request)
+
+        self.assertEqual(h, {"Access-Control-Request-Headers": "Content-Type"})
         self.assertEqual(c, [preflight.check_headers])
 
 

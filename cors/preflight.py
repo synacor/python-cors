@@ -82,23 +82,23 @@ def prepare_preflight_allowed_methods(request):
     headers = {}
     checks = []
     if not is_simple_method(request):
-        headers["Access-Control-Allow-Methods"] = request.method
+        headers["Access-Control-Request-Method"] = request.method
         checks.append(check_method)
-    if not is_simple_content_type(request):
-        headers["Access-Control-Allow-Headers"] = "Content-Type"
-        checks.append(check_headers)
 
     return headers, checks
 
 def prepare_preflight_allowed_headers(request):
-    needed = list(get_prohibited_headers(request, {}))
-    needed = map(format_header_field, needed)
+    needed = get_prohibited_headers(request, {})
+    needed = {format_header_field(h) for h in needed}
+
+    if not is_simple_content_type(request):
+        needed.add("Content-Type")
 
     if len(needed) == 0:
         return {}, []
 
     return (
-        {"Access-Control-Allow-Headers": ",".join(needed)},
+        {"Access-Control-Request-Headers": ",".join(needed)},
         [check_headers]
     )
 
