@@ -1,5 +1,7 @@
 from cors.errors import AccessControlError
 from cors.definitions import (
+    CORS_HEADERS,
+    SIMPLE_RESPONSE_HEADERS,
     is_same_origin,
     is_simple_method,
     is_simple_content_type,
@@ -133,6 +135,48 @@ def prepare_preflight(request):
         headers)
 
     return preflight, checks
+
+def generate_acceptable_preflight_response_headers(requested):
+    """
+    Given preflight request headers generate necessary CORS response headers.
+
+    """
+    response = {"Access-Control-Allow-Origin": "*"}
+
+    if "Access-Control-Request-Method" in requested:
+        method = requested["Access-Control-Request-Method"]
+        response["Access-Control-Allow-Methods"] = method
+
+    if "Access-Control-Request-Headers" in requested:
+        headers = requested["Access-Control-Request-Headers"]
+        response["Access-Control-Allow-Headers"] = headers
+
+    return response
+
+def generate_acceptable_actual_response_headers(response, origin=None):
+    """
+    Given the headers from an actual response add appropriate CORS response.
+
+    """
+    response = response.copy()
+    if response.get("Access-Control-Allow-Origin", "") != origin:
+        response["Access-Control-Allow-Origin"] = "*"
+
+    exposed = response.get("Access-Control-Expose-Headers", "")
+    exposed = exposed.split(",")
+    exposed = map(lambda h: unicode(h).lower().strip(), exposed)
+    received = response.keys()
+    received = map(lambda h: unicode(h).lower().strip(), received)
+    non_simple = set(received) - SIMPLE_RESPONSE_HEADERS - CORS_HEADERS
+
+    exposed = set(exposed) | non_simple
+    exposed = [
+        "-".join([p.capitalize() for p in h.split("_")])
+        for h in exposed
+    ]
+
+    response["Access-Control-Expose-Headers"] = ",".join(exposed)
+    return response
 
 def send(request, session=None, skip_checks_on_server_error=True, **kwargs):
     """

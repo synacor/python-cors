@@ -211,6 +211,76 @@ class Function_prepare_preflight_Tests(unittest.TestCase):
         self.assertIsNone(preflight_request)
 
 
+class Function_generate_acceptable_preflight_response_headers_Tests(unittest.TestCase):
+    def setUp(self):
+        self.method = preflight.generate_acceptable_preflight_response_headers
+
+    def test_generate_headers_for_empty_preflight(self):
+        headers = {}
+
+        response = self.method(headers)
+
+        self.assertEqual(response["Access-Control-Allow-Origin"], "*")
+        self.assertNotIn("Access-Control-Allow-Methods", response)
+        self.assertNotIn("Access-Control-Allow-Headers", response)
+
+    def test_generate_headers_for_needed_method_and_header(self):
+        headers = {
+            "Access-Control-Request-Method": "PUT",
+            "Access-Control-Request-Headers": "Content-Type"
+        }
+
+        response = self.method(headers)
+
+        self.assertEqual(response["Access-Control-Allow-Origin"], "*")
+        self.assertEqual(response["Access-Control-Allow-Methods"], "PUT")
+        self.assertEqual(response["Access-Control-Allow-Headers"], "Content-Type")
+
+
+class Function_generate_acceptable_actual_response_headers_Tests(unittest.TestCase):
+    def setUp(self):
+        self.method = preflight.generate_acceptable_actual_response_headers
+
+    def test_generate_headers_for_empty_response(self):
+        headers = {}
+
+        corsified = self.method(headers)
+
+        self.assertEqual(corsified["Access-Control-Allow-Origin"], "*")
+        self.assertNotIn("Access-Control-Allow-Methods", headers)
+        self.assertNotIn("Access-Control-Allow-Headers", headers)
+
+    def test_generate_headers_for_cross_origin(self):
+        headers = {"Access-Control-Allow-Origin": "foo"}
+        origin = "bar"
+
+        corsified = self.method(headers, origin)
+
+        self.assertEqual(corsified["Access-Control-Allow-Origin"], "*")
+
+    def test_generate_headers_for_matched_origin(self):
+        headers = {"Access-Control-Allow-Origin": "foo"}
+        origin = "foo"
+
+        corsified = self.method(headers, origin)
+
+        self.assertEqual(corsified["Access-Control-Allow-Origin"], "foo")
+
+    def test_generate_headers_for_extra_exposed_headers(self):
+        headers = {
+            "Access-Control-Expose-Headers": "foo, baz",
+            "bar": "qux"
+        }
+
+        corsified = self.method(headers)
+
+        exposed = corsified["Access-Control-Expose-Headers"].split(",")
+        exposed = [h.strip() for h in exposed]
+        self.assertIn("Foo", exposed)
+        self.assertIn("Bar", exposed)
+        self.assertIn("Baz", exposed)
+
+
 class Function_send_Tests(unittest.TestCase):
 
     @mock.patch("cors.preflight.prepare_preflight")
