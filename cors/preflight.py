@@ -215,8 +215,7 @@ def send(request, session=None, skip_checks_on_server_error=True, **kwargs):
     # double-check that the actual response included appropriate headers as well
     # skip checks in the case of a server error unless configured otherwise.
     if response.status_code / 100 != 5 or not skip_checks_on_server_error:
-        for check in checks:
-            check(response, request)
+        check_origin(response, request)
 
     # wrap the headers in a protective layer
     exposed = response.headers.get("Access-Control-Expose-Headers", "")

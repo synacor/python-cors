@@ -315,7 +315,7 @@ class Function_send_Tests(unittest.TestCase):
     def test_preflight_checks_fail(self, prepare, _):
         check_a = mock.MagicMock()
         check_b = mock.MagicMock(side_effect=errors.AccessControlError("foo"))
-        prepare.return_value = (None, [check_a, check_b])
+        prepare.return_value = (_request(), [check_a, check_b])
         request = _request()
 
         with self.assertRaises(errors.AccessControlError) as context:
