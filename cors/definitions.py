@@ -67,7 +67,10 @@ def is_same_origin(request):
     return host == origin
 
 def is_simple_method(request):
-    return request.method.upper() in SIMPLE_METHODS
+    return (
+        request.method.upper() in SIMPLE_METHODS
+        and is_simple_content_type(request)
+    )
 
 def is_simple_content_type(request):
     return (

@@ -1,7 +1,9 @@
 from cors.errors import AccessControlError
 from cors.definitions import (
     CORS_HEADERS,
+    SIMPLE_METHODS,
     SIMPLE_RESPONSE_HEADERS,
+    SIMPLE_REQUEST_CONTENT_TYPES,
     is_same_origin,
     is_simple_method,
     is_simple_content_type,
@@ -40,14 +42,23 @@ def check_method(response, prepared_request):
 
     """
     request = prepared_request
+    simple = request.method.upper() in SIMPLE_METHODS
+    irregular_post = (
+        request.method.upper() == "POST"
+        and "Content-Type" in request.headers
+        and request.headers["Content-Type"] not in SIMPLE_REQUEST_CONTENT_TYPES
+    )
 
-    if is_simple_method(request):
+    if simple and not irregular_post:
         return
 
-    allowed = response.headers.get("Access-Control-Allow-Methods", "")
-    allowed = map(str.strip, allowed.split(","))
+    allowed_methods = response.headers.get("Access-Control-Allow-Methods", "")
+    allowed_methods = [
+        allowed.strip().upper()
+        for allowed in allowed_methods.split(",")
+    ]
 
-    if request.method not in allowed:
+    if request.method.upper() not in allowed_methods:
         raise AccessControlError(
             "Method %r not allowed for resource %r" % (request.method, request.url),
             request.url,
@@ -86,6 +97,11 @@ def prepare_preflight_allowed_methods(request):
     if not is_simple_method(request):
         headers["Access-Control-Request-Method"] = request.method
         checks.append(check_method)
+
+    content_type = request.headers.get("Content-Type", "text/plain")
+    if content_type not in SIMPLE_REQUEST_CONTENT_TYPES:
+        headers["Access-Control-Request-Headers"] = "Content-Type"
+        checks.append(check_headers)
 
     return headers, checks
 
