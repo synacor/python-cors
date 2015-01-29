@@ -106,6 +106,36 @@ When calling `send` you may also include a custom requests.Session instance, and
 a flag to specify that CORS checks on the actual request should be if the server
 comes back with a `5XX` error.
 
+
+#### High-level wrapper for tornado async http client
+
+```python
+
+from tornado.httpclient import AsyncHTTPClient
+import cors.clients.tornado
+
+@coroutine
+def my_cors_coroutine():
+    client = AsyncHTTPClient()
+    yield cors.clients.tornado.cors_enforced_fetch(client, "http://example.com")
+
+@coroutine
+def my_alternate_cors_coroutine():
+    client = AsyncHTTPClient()
+    cors.clients.tornado.enforce_cors_on_client(client)
+    yield client.fetch("http://example.com")
+
+```
+
+The `enforce_cors_on_client` function replaces the AsyncHTTPClient object's
+`fetch` method with one that will do a CORS preflight request and followup
+checks as appropriate and wrap the response's headers.
+
+Alternatively, in situations where you don't own the client object and don't
+want to force unexpected behaviour on others, `cors_enforced_fetch` can be
+called with an unmodified client as its first argument.
+
+
 ### Server
 
 #### No-fuss enabling of a cross-origin request
