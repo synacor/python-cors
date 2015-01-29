@@ -1,7 +1,13 @@
 import re
 import urlparse
 
-CORS_HEADERS = set([
+
+CORS_REQUEST_HEADERS = set([
+    "access-control-request-method",
+    "access-control-request-headers",
+])
+
+CORS_RESPONSE_HEADERS = set([
     "access-control-allow-origin",
     "access-control-allow-methods",
     "access-control-allow-headers",
@@ -18,6 +24,8 @@ SIMPLE_METHODS = set([
 
 # Headers which will be included in a request but not set by the application.
 SIMPLE_AGENT_HEADERS = set([
+    "accept-encoding",
+    "connection",
     "content-length",
     "host",
     "origin",
@@ -80,6 +88,6 @@ def is_simple_content_type(request):
 
 def get_prohibited_headers(request, allowed):
     requested = set(map(str.lower, request.headers.keys()))
-    implicit = (SIMPLE_AUTHOR_HEADERS | SIMPLE_AGENT_HEADERS)
+    implicit = (SIMPLE_AUTHOR_HEADERS | SIMPLE_AGENT_HEADERS | CORS_REQUEST_HEADERS)
     allowed = set(_normalize_list(allowed))
     return requested - implicit - allowed

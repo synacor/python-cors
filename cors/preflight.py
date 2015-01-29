@@ -1,6 +1,6 @@
 from cors.errors import AccessControlError
 from cors.definitions import (
-    CORS_HEADERS,
+    CORS_RESPONSE_HEADERS,
     SIMPLE_METHODS,
     SIMPLE_RESPONSE_HEADERS,
     SIMPLE_REQUEST_CONTENT_TYPES,
@@ -144,7 +144,8 @@ def prepare_preflight(request):
     if len(headers) == 0 and len(checks) == 0:
         return None, []
 
-    headers["Host"] = request.headers.get("host")
+    request_headers = CaseInsensitiveDict(request.headers)
+    headers["Host"] = request_headers.get("host")
     preflight = Request(
         "OPTIONS",
         request.url,
@@ -183,7 +184,7 @@ def generate_acceptable_actual_response_headers(response, origin=None):
     exposed = map(lambda h: unicode(h).lower().strip(), exposed)
     received = response.keys()
     received = map(lambda h: unicode(h).lower().strip(), received)
-    non_simple = set(received) - SIMPLE_RESPONSE_HEADERS - CORS_HEADERS
+    non_simple = set(received) - SIMPLE_RESPONSE_HEADERS - CORS_RESPONSE_HEADERS
 
     exposed = set(exposed) | non_simple
     exposed = [

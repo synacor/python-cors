@@ -2,7 +2,7 @@ from requests.structures import CaseInsensitiveDict
 
 from cors.errors import AccessControlError
 from cors.definitions import (
-    CORS_HEADERS,
+    CORS_RESPONSE_HEADERS,
     SIMPLE_RESPONSE_HEADERS,
 )
 
@@ -20,7 +20,7 @@ class ProtectedHTTPHeaders(CaseInsensitiveDict):
         self.exposed_headers = map(str.lower, exposed_headers)
 
     def check_header_accessible(self, name):
-        if name.lower() in SIMPLE_RESPONSE_HEADERS | CORS_HEADERS:
+        if name.lower() in SIMPLE_RESPONSE_HEADERS | CORS_RESPONSE_HEADERS:
             return
         if name.lower() not in self.exposed_headers:
             raise AccessControlError("Access to header %r not allowed." % name)
