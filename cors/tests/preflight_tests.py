@@ -6,7 +6,7 @@ from cors import (
     preflight,
 )
 from cors.utils import (
-    CaseInsensitiveDict,
+    HeadersDict,
     Request,
 )
 
@@ -17,7 +17,7 @@ def _request(url="http://example.com", method="GET", headers=None, origin="http:
     request.kwargs.update(kwargs)
     request.url = url
     request.method = method
-    request.headers = CaseInsensitiveDict(headers or {})
+    request.headers = HeadersDict(headers or {})
     request.prepare = lambda: request
 
     if "origin" not in request.headers:
@@ -27,7 +27,7 @@ def _request(url="http://example.com", method="GET", headers=None, origin="http:
 def _response(request=None, headers=None):
     response = mock.MagicMock()
     response.request = request or _request()
-    response.headers = CaseInsensitiveDict(headers or {})
+    response.headers = HeadersDict(headers or {})
     return response
 
 def _session():

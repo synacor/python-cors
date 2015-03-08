@@ -1,12 +1,36 @@
-from requests.structures import CaseInsensitiveDict
-
 from cors.errors import AccessControlError
 from cors.definitions import (
     CORS_RESPONSE_HEADERS,
     SIMPLE_RESPONSE_HEADERS,
 )
 
-class ProtectedHTTPHeaders(CaseInsensitiveDict):
+
+class HeadersDict(dict):
+    """
+    A dictionary that translates keys to HTTP header case.
+
+    """
+    def __init__(self, *args, **kwargs):
+        super(HeadersDict, self).__init__(*args, **kwargs)
+
+    @staticmethod
+    def normalize(key):
+        return "-".join(map(str.capitalize, key.split("-")))
+
+    def __getitem__(self, key):
+        return super(HeadersDict, self).__getitem__(self.normalize(key))
+
+    def __setitem__(self, key, value):
+        return super(HeadersDict, self).__setitem__(self.normalize(key), value)
+
+    def __delitem__(self, key):
+        return super(HeadersDict, self).__delitem__(self.normalize(key))
+
+    def __contains__(self, key):
+        return super(HeadersDict, self).__contains__(self.normalize(key))
+
+
+class ProtectedHTTPHeaders(HeadersDict):
     """
     Protective layer to limit access to cross origin response headers.
 

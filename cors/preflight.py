@@ -10,7 +10,7 @@ from cors.definitions import (
     get_prohibited_headers,
 )
 from cors.utils import (
-    CaseInsensitiveDict,
+    HeadersDict,
     ProtectedHTTPHeaders,
     Request,
 )
@@ -24,7 +24,7 @@ def check_origin(response, prepared_request):
 
     """
     request = prepared_request
-    headers = CaseInsensitiveDict(prepared_request.headers)
+    headers = HeadersDict(prepared_request.headers)
     if is_same_origin(request):
         return
 
@@ -144,7 +144,7 @@ def prepare_preflight(request):
     if len(headers) == 0 and len(checks) == 0:
         return None, []
 
-    request_headers = CaseInsensitiveDict(request.headers)
+    request_headers = HeadersDict(request.headers)
     headers["Host"] = request_headers.get("host", "")
     preflight = Request(
         "OPTIONS",
