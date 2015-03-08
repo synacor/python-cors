@@ -121,19 +121,22 @@ def my_cors_coroutine():
 
 @coroutine
 def my_alternate_cors_coroutine():
-    client = AsyncHTTPClient()
-    cors.clients.tornado.enforce_cors_on_client(client)
+    client = cors.clients.tornado.WrappedClient(AsyncHTTPClient())
     yield client.fetch("http://example.com")
 
 ```
 
-The `enforce_cors_on_client` function replaces the AsyncHTTPClient object's
-`fetch` method with one that will do a CORS preflight request and followup
-checks as appropriate and wrap the response's headers.
+~~The `enforce_cors_on_client` function replaces the AsyncHTTPClient object's~~
+The `WrappedClient` class provides you an object with an interface identical to
+`tornado.httpclient.AsyncHTTPClient` but whose `fetch` method with will perform
+CORS preflight request and followup checks as appropriate and wrap the
+response's headers. Wrapping a client is preferable to replacing its attributes
+because AsyncHTTPClient uses a custom `__new__` method to attempt to share class
+instances.
 
-Alternatively, in situations where you don't own the client object and don't
-want to force unexpected behaviour on others, `cors_enforced_fetch` can be
-called with an unmodified client as its first argument.
+If you wish to explicitly perform a cors request and don't want to deal with a
+wrapper object, you may directl use `cors_enforced_fetch` which can be called
+with an unmodified client as its first argument.
 
 
 ### Server
