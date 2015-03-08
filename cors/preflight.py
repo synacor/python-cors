@@ -145,7 +145,7 @@ def prepare_preflight(request):
         return None, []
 
     request_headers = CaseInsensitiveDict(request.headers)
-    headers["Host"] = request_headers.get("host")
+    headers["Host"] = request_headers.get("host", "")
     preflight = Request(
         "OPTIONS",
         request.url,
