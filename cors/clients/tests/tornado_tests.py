@@ -7,6 +7,7 @@ from tornado.web import Application, HTTPError, RequestHandler
 from cors import (
     errors,
     preflight,
+    utils,
 )
 from cors.clients.tornado import (
     WrappedClient,
@@ -65,7 +66,7 @@ class Function_fetch_Tests(AsyncHTTPTestCase):
 
         response = yield self.http_client.fetch(request)
 
-        self.assertIsInstance(response.headers, preflight.ProtectedHTTPHeaders)
+        self.assertIsInstance(response.headers, utils.ProtectedHTTPHeaders)
 
     @gen_test
     def test_preflight_request_failed(self):

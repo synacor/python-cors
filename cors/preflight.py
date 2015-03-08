@@ -11,7 +11,6 @@ from cors.definitions import (
 )
 from cors.utils import (
     HeadersDict,
-    ProtectedHTTPHeaders,
     Request,
 )
 
@@ -193,49 +192,4 @@ def generate_acceptable_actual_response_headers(response, origin=None):
     ]
 
     response["Access-Control-Expose-Headers"] = ",".join(exposed)
-    return response
-
-def send(request, session=None, skip_checks_on_server_error=True, **kwargs):
-    """
-    Send a request adhering to same-origin policy rules.
-
-    Heads up; this function uses the requests library because most people do.
-    If you intend to use another Python HTTP client, don't use this method
-
-    """
-    import requests
-    session = session or requests.Session()
-    preflight, checks = prepare_preflight(request)
-
-    if preflight is not None:
-        preflight = requests.Request(
-            preflight.method,
-            preflight.url,
-            preflight.headers,
-            **preflight.kwargs).prepare()
-
-        response = session.send(preflight)
-        if not response.ok:
-            raise AccessControlError(
-                "Pre-flight check failed",
-                preflight.url,
-                preflight.method,
-                preflight.headers)
-
-        # check that the preflight response says its ok to send our followup.
-        # below check again that the preflight grants access to the response.
-        for check in checks:
-            check(response, request)
-
-    response = session.send(request, **kwargs)
-
-    # double-check that the actual response included appropriate headers as well
-    # skip checks in the case of a server error unless configured otherwise.
-    if response.status_code / 100 != 5 or not skip_checks_on_server_error:
-        check_origin(response, request)
-
-    # wrap the headers in a protective layer
-    exposed = response.headers.get("Access-Control-Expose-Headers", "")
-    response.headers = ProtectedHTTPHeaders(exposed, response.headers)
-
     return response
