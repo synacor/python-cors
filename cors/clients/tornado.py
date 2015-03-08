@@ -9,11 +9,6 @@ from cors.preflight import check_origin, prepare_preflight
 from cors.utils import ProtectedHTTPHeaders
 
 
-def enforce_cors_on_client(client):
-    client._original_fetch = client.fetch
-    client.fetch = cors_enforced_fetch.__get__(client, AsyncHTTPClient)
-
-
 def normalize_request(request, **kwargs):
     if not isinstance(request, HTTPRequest):
         request = HTTPRequest(url=request, **kwargs)
@@ -26,9 +21,20 @@ def safe_fetch(fetch, request):
     return future
 
 
+class WrappedClient(object):
+    def __init__(self, client=None):
+        client = client or AsyncHTTPClient()
+        self.client = client
+
+    def __getattr__(self, attr):
+        return getattr(self.client, attr)
+
+    def fetch(self, *args, **kwargs):
+        return cors_enforced_fetch(self.client, *args, **kwargs)
+
+
 @coroutine
-def cors_enforced_fetch(client, request, callback=None, raise_error=True, **kwargs):
-    fetch = getattr(client, "_original_fetch", client.fetch)
+def cors_enforced_fetch(client, request, callback=None, **kwargs):
     request = normalize_request(request, **kwargs)
     preflight, checks = prepare_preflight(request)
 
@@ -38,8 +44,7 @@ def cors_enforced_fetch(client, request, callback=None, raise_error=True, **kwar
             preflight.method,
             preflight.headers)
 
-
-        response = yield safe_fetch(fetch, preflight)
+        response = yield safe_fetch(client.fetch, preflight)
         if response.error:
             raise AccessControlError(
                 "Pre-flight check failed",
@@ -52,10 +57,7 @@ def cors_enforced_fetch(client, request, callback=None, raise_error=True, **kwar
         for check in checks:
             check(response, request)
 
-    if raise_error:
-        response = yield fetch(request)
-    else:
-        response = yield safe_fetch(fetch, request)
+    response = yield safe_fetch(client.fetch, request)
 
     # double-check that the actual response included appropriate headers as well
     # skip checks in the case of a server error unless configured otherwise.

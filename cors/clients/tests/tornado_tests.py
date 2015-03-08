@@ -9,7 +9,7 @@ from cors import (
     preflight,
 )
 from cors.clients.tornado import (
-    enforce_cors_on_client,
+    WrappedClient,
     normalize_request,
 )
 
@@ -44,7 +44,7 @@ class Function_normalize_request_Tests(unittest.TestCase):
 class Function_fetch_Tests(AsyncHTTPTestCase):
     def setUp(self):
         super(Function_fetch_Tests, self).setUp()
-        enforce_cors_on_client(self.http_client)
+        self.http_client = WrappedClient()
 
     def get_app(self):
         return Application([
