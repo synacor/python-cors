@@ -84,19 +84,19 @@ But for many people that library is `requests`, so...
 ```python
 
 import requests
-import cors.preflight
+from cors.clients.requests import send
 
 my_request = requests.Request(
     "POST", "http://example.com",
     headers={"Content-Type": "application/json"},
     body="{}").prepare()
 
-response = cors.preflight.send(my_request)
+response = send(my_request)
 
 ```
 
-Done. The `cors.preflight.send` function will inspect your prepared request
-object and:
+Done. The `cors.clients.requests.send` function will inspect your prepared
+request object and:
 
 1. generate and send a preflight request if necessary
 2. pick and run any necessary validation checks
