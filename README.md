@@ -1,3 +1,6 @@
+[![Build Status](https://travis-ci.org/synacorinc/python-cors.svg)](https://travis-ci.org/synacorinc/python-cors)
+
+
 # CORS
 
 > A Python package for dealing with HTTP requests and same-origin policies.
@@ -14,8 +17,8 @@ using to actually make the HTTP requests and thus mostly deals in an internally
 defined `Request` class which simply contains the url, headers, and method as
 properties. From here you can convert to whatever you need to send the request.
 
-Of course, Python programmers tend to love the hell out of 
-[_requests_](https://github.com/kennethreitz/requests) (and, I mean, 
+Of course, Python programmers tend to love the hell out of
+[_requests_](https://github.com/kennethreitz/requests) (and, I mean,
 who doesn't?), so there's also an included function you can use to send a
 request including preflight and CORS header checks.
 
@@ -26,7 +29,7 @@ request including preflight and CORS header checks.
 
 #### Low-level
 
-For maximum flexibility you can use the package's low-level functionality to 
+For maximum flexibility you can use the package's low-level functionality to
 generate a preflight request and callable check methods to validate your
 request.
 
