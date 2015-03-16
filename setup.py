@@ -7,4 +7,8 @@ setup(
     author="Nick Coutsos",
     author_email="ncoutsos@synacor.com",
     packages=find_packages(exclude=["*tests*"]),
+    # pip install -e .[test]
+    extras_require = {
+        'test': ['mock', 'tornado', 'requests'],
+    },
 )
